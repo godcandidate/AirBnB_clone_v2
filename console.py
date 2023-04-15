@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """This is the console for AirBnB"""
+
 import cmd
 import re
 from models import storage
