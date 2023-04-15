@@ -7,6 +7,7 @@
 # - grants /data/ -> ubuntu and group
 # - update nginx conf to serve /data/web_static/current/
 # - restart nginx
+
 apt-get -y update
 apt-get -y install nginx
 mkdir -p /data/web_static/releases/test/
