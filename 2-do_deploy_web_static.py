@@ -13,10 +13,10 @@ def do_deploy(archive_path):
     if not os.path.exists(archive_path):
         return False
 
-    results = []
+    result = []
 
     res = put(archive_path, "/tmp")
-    results.append(res.succeeded)
+    result.append(res.succeeded)
 
     basename = os.path.basename(archive_path)
     if basename[-4:] == ".tgz":
