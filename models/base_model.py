@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """This is the base model class for AirBnB"""
+
 import uuid
 import models
 from datetime import datetime
