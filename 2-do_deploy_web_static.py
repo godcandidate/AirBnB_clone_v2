@@ -1,34 +1,43 @@
 #!/usr/bin/python3
-""" Does deployment"""
-
-from fabric.api import *
 import os
+import re
+from fabric.api import *
 
-env.hosts = ["34.73.8.171", "34.74.18.52"]
-env.user = "ubuntu"
 
+env.hosts = ['3.84.239.114', '34.224.17.58']
 
-def do_deploy(archive_path):
-    """ Deploys archive to servers"""
-    if not os.path.exists(archive_path):
+def do_pack():
+    """ A script that generates archive the contents of web_static folder"""
+
+    try:
+        if not (path.exists(archive_path)):
+            return False
+
+        # upload to server
+        put(archive_path, /tmp/)
+
+        # extracting name without extension
+        pattern = r"(\w+)\.\w+"
+        new_filename = re.search(pattern, archive_path).group(1)
+        tmp_path = re.search(pattern, archive_path).group()
+
+        # creating folder path
+        new_path = '/data/web_static/releases/{}'.format(new_filename)
+        run(f'mkdir -p {}'.format(new_path))
+
+        # uncompress the archive
+        run('tar -xzf /tmp/{} -C {}'.format(tmp_path, new_path))
+
+        # delete archive
+        run(f'rm /tmp/{}'.format(tmp_path))
+
+        # delete symbolic
+        run('rm /data/web_static/current')
+
+        # create a new symbolic link
+        run('ln -s {} /data/web_static/current'.format(new_path))
+
+        return True
+
+    except e:
         return False
-
-    result = []
-
-    res = put(archive_path, "/tmp")
-    result.append(res.succeeded)
-
-    basename = os.path.basename(archive_path)
-    if basename[-4:] == ".tgz":
-        name = basename[:-4]
-    newdir = "/data/web_static/releases/" + name
-    run("mkdir -p " + newdir)
-    run("tar -xzf /tmp/" + basename + " -C " + newdir)
-
-    run("rm /tmp/" + basename)
-    run("mv " + newdir + "/web_static/* " + newdir)
-    run("rm -rf " + newdir + "/web_static")
-    run("rm -rf /data/web_static/current")
-    run("ln -s " + newdir + " /data/web_static/current")
-
-    return True
