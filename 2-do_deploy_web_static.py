@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Deploy an archive  to my web servers using Fabric3"""
+"""Deploy an archive of static html to my web servers with Fabric3"""
 
 from fabric.api import *
 from fabric.contrib import files
@@ -8,7 +8,7 @@ import os
 
 env.hosts = ['3.84.239.114', '34.224.17.58']
 env.user = 'ubuntu'
-env.key_filename = '~/.ssh/school'
+env.key_filename = '~/.ssh/alx_server'
 
 
 def deploy_archive(archive_path):
