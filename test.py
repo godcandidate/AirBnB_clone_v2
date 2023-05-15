@@ -1,22 +1,43 @@
 #!/usr/bin/python3
-# a Fabric script that generates a .tgz archive from the contents
 import os
-from datetime import datetime
-from fabric.api import local
-from fabric.context_managers import cd
+import re
+from fabric.api import *
 
+
+env.hosts = ['3.84.239.114', '34.224.17.58']
 
 def do_pack():
-    """ create a tar file of a web static """
+    """ A script that generates archive the contents of web_static folder"""
 
-    if os.path.isdir('./versions') is False:
-        if local('mkdir versions').failed is True:
-            return None
+    try:
+        if not (path.exists(archive_path)):
+            return False
 
-    dt = datetime.now()
-    date_t = f"{dt.year}{dt.month}{dt.day}{dt.hour}{dt.minute}{dt.second}"
-    filename = f"versions/web_static_{date_t}.tgz"
+        # upload to server
+        put(archive_path, /tmp/)
 
-    if local(f'tar -czvf {filename} web_static').failed is True:
-        return None
-    return filename
+        # extracting name without extension
+        pattern = r"(\w+)\.\w+"
+        new_filename = re.search(pattern, archive_path).group(1)
+        tmp_path = re.search(pattern, archive_path).group()
+
+        # creating folder path
+        new_path = '/data/web_static/releases/{}'.format(new_filename)
+        run(f'mkdir -p {}'.format(new_path))
+
+        # uncompress the archive
+        run('tar -xzf /tmp/{} -C {}'.format(tmp_path, new_path))
+
+        # delete archive
+        run(f'rm /tmp/{}'.format(tmp_path))
+
+        # delete symbolic
+        run('rm /data/web_static/current')
+
+        # create a new symbolic link
+        run('ln -s {} /data/web_static/current'.format(new_path))
+
+        return True
+
+    except e:
+        return False
