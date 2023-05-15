@@ -7,7 +7,8 @@ from fabric.context_managers import cd
 
 
 def do_pack():
-    """ create a tar file of a web static"""
+    """ create a tar file of a web static """
+
     if os.path.isdir('./versions') is False:
         if local('mkdir versions').failed is True:
             return None
