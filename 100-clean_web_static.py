@@ -1,25 +1,27 @@
 #!/usr/bin/python3
-""" Cleans old files"""
-
-from fabric.api import *
 import os
-from datetime import datetime
-import tarfile
+from fabric.api import *
 
-env.hosts = ["34.73.8.171", "34.74.18.52"]
-env.user = "ubuntu"
+env.hosts = ['3.84.239.114', '34.224.17.58']
 
 
 def do_clean(number=0):
-    """ Removes all but given number of archives"""
-    number = int(number)
-    if number < 2:
-        number = 1
-    number += 1
-    number = str(number)
+    """Delete out-of-date archives.
+    Args:
+        number (int): The number of archives to keep.
+    If number is 0 or 1, keeps only the most recent archive. If
+    number is 2, keeps the most and second-most recent archives,
+    etc.
+    """
+    number = 1 if int(number) == 0 else int(number)
+
+    my_archives = sorted(os.listdir("versions"))
+    [my_archives.pop() for i in range(number)]
     with lcd("versions"):
-        local("ls -1t | grep web_static_.*\.tgz | tail -n +" +
-              number + " | xargs -I {} rm -- {}")
+        [local("rm ./{}".format(item)) for item in my_archives]
+
     with cd("/data/web_static/releases"):
-        run("ls -1t | grep web_static_ | tail -n +" +
-            number + " | xargs -I {} rm -rf -- {}")
+        my_archives = run("ls -tr").split()
+        my_archives = [a for a in archives if "web_static_" in a]
+        [my_archives.pop() for i in range(number)]
+        [run("rm -rf ./{}".format(item)) for item in my_archives]
