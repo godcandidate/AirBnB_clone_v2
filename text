@@ -1,3 +1,0 @@
-fab -f test1.py do_deploy:archive_path=versions/web_static_2023515113225.tgz -i ~/.ssh/id_rsa -u ubuntu
-fab -f 2-do_deploy_web_static.py do_deploy:archive_path=versions/web_static_2023515113225.tgz -i ~/.ssh/id_rsa -u ubuntu
-fab -f test.py do_deploy:archive_path=versions/web_static_2023515113225.tgz -i ~/.ssh/id_rsa -u ubuntu
