@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Deploy an archive of static html to my web servers with Fabric3"""
+"""Deploy an archive to my web servers with Fabric3"""
 
 from fabric import api
 from fabric.contrib import files
@@ -7,16 +7,14 @@ import os
 
 
 api.env.hosts = ['3.84.239.114', '34.224.17.58']
-api.env.user = 'ubuntu'
-api.env.key_filename = '~/.ssh/school'
-
 
 def do_deploy(archive_path):
     """Function to transfer `archive_path` to web servers.
     Args:
-        archive_path (str): path of the .tgz file to transfer
-    Returns: True on success, False otherwise.
+        archive_path (str): path of the .tgz file
+    Returns: True on success, otherwise False.
     """
+
     if not os.path.isfile(archive_path):
         return False
     with api.cd('/tmp'):
