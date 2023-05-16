@@ -1,43 +1,44 @@
 #!/usr/bin/python3
+"""Distributes an archive to your web servers"""
 import os
-import re
 from fabric.api import *
+from datetime import datetime
 
 
 env.hosts = ['3.84.239.114', '34.224.17.58']
-
-def do_pack():
-    """ A script that generates archive the contents of web_static folder"""
+def do_deploy(archive_path):
+    """deploys the archive to the servers and updates it"""
+    if not os.path.isfile(archive_path):
+        return False
 
     try:
-        if not (path.exists(archive_path)):
-            return False
+        # Upload the archive to the /tmp/ directory of the web server
+        put(archive_path, '/tmp/')
 
-        # upload to server
-        put(archive_path, /tmp/)
+        # Uncompress the archive to the folder
+        # /data/web_static/releases/<archive filename without extension>
+        # on the web server
+        filename = os.path.basename(archive_path)
+        fname = filename.split('.')[0]
+        folder_name = '/data/web_static/releases/' + fname
+        run('mkdir {}'.format(folder_name))
+        run('tar -xzf /tmp/{} -C {}'.format(filename, folder_name))
 
-        # extracting name without extension
-        pattern = r"(\w+)\.\w+"
-        new_filename = re.search(pattern, archive_path).group(1)
-        tmp_path = re.search(pattern, archive_path).group()
+        # Delete the archive from the web server
+        run('rm /tmp/{}'.format(filename))
 
-        # creating folder path
-        new_path = '/data/web_static/releases/{}'.format(new_filename)
-        run(f'mkdir -p {}'.format(new_path))
+        # Move content out of the sub-folder
+        run("mv /data/web_static/releases/{}/web_static/*\
+            /data/web_static/releases/{}/".format(fname, fname))
 
-        # uncompress the archive
-        run('tar -xzf /tmp/{} -C {}'.format(tmp_path, new_path))
+        # Delete the symbolic link /data/web_static/current from the web server
+        run('rm -rf /data/web_static/current')
 
-        # delete archive
-        run(f'rm /tmp/{}'.format(tmp_path))
-
-        # delete symbolic
-        run('rm /data/web_static/current')
-
-        # create a new symbolic link
-        run('ln -s {} /data/web_static/current'.format(new_path))
+        # Create a new the symbolic link /data/web_static/current on the
+        # web server linked to the new version of your code
+        # (/data/web_static/releases/<archive filename without extension>)
+        run('ln -s {} /data/web_static/current'.format(folder_name))
 
         return True
-
-    except e:
+    except Exception:
         return False
